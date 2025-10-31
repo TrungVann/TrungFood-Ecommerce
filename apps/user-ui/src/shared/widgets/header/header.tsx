@@ -1,5 +1,8 @@
+"use client";
 import Link from "next/link";
 import React from "react";
+
+import HeaderBottom from "./header-bottom";
 
 import { Search } from "lucide-react";
 import { CircleUser } from "lucide-react";
@@ -12,7 +15,7 @@ const Header = () => {
       <div className="w-[80%] py-5 m-auto flex items-center justify-between">
         <div>
           <Link href={"/"}>
-            <span className="text-2xl font-[500]">TrungFood</span>
+            <span className="text-2xl font-[600]">TrungFood</span>
           </Link>
         </div>
         <div className="w-[50%] relative">
@@ -25,9 +28,12 @@ const Header = () => {
             <Search color="#fff" />
           </div>
         </div>
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-8 pb-2">
           <div className="flex items-center gap-2">
-            <Link href={"/login"}>
+            <Link
+              href={"/login"}
+              className="flex items-center justify-center mr-5"
+            >
               <CircleUser className="w-[40px] h-[40px]" color="#FF541B" />
             </Link>
             <Link href={"/login"}>
