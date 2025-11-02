@@ -1,9 +1,10 @@
 "use client";
 import GoogleButton from "apps/user-ui/src/shared/components/google-button";
+import e from "express";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 type FormData = {
@@ -15,7 +16,13 @@ type FormData = {
 const RegisterPage = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [showOtp, setShowOtp] = useState(true);
+  const [canResend, setCanResend] = useState(true);
+  const [timer, setTimer] = useState(60);
+  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [userData, setUserData] = useState<FormData | null>(null);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const router = useRouter();
 
   const {
@@ -25,6 +32,29 @@ const RegisterPage = () => {
   } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {};
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^[0-9]?$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < inputRefs.current.length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const resendOtp = () => {};
 
   return (
     <div className="w-full py-10 min-h-[85vh] bg-[#f1f1f1]">
@@ -55,101 +85,124 @@ const RegisterPage = () => {
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <label className="block text-gray-700 mb-1">Name</label>
-            <input
-              type="text"
-              placeholder="Your name..."
-              className="w-full p-2 border border-gray-300 outline-0 !rounded mb-1"
-              {...register("name", {
-                required: "Name is required",
-              })}
-            />
-
-            {errors.name && (
-              <p className="text-red-500 text-sm">
-                {String(errors.name.message)}
-              </p>
-            )}
-
-            <label className="block text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              placeholder="Your email..."
-              className="w-full p-2 border border-gray-300 outline-0 !rounded mb-1"
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                  message: "Invalid email address",
-                },
-              })}
-            />
-
-            {errors.email && (
-              <p className="text-red-500 text-sm">
-                {String(errors.email.message)}
-              </p>
-            )}
-
-            <label className="block text-gray-700 mb-1">Password</label>
-            <div className="relative">
+          {!showOtp ? (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <label className="block text-gray-700 mb-1">Name</label>
               <input
-                type={passwordVisible ? "text" : "password"}
-                placeholder="Your password..."
+                type="text"
+                placeholder="Your name..."
                 className="w-full p-2 border border-gray-300 outline-0 !rounded mb-1"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
+                {...register("name", {
+                  required: "Name is required",
+                })}
+              />
+
+              {errors.name && (
+                <p className="text-red-500 text-sm">
+                  {String(errors.name.message)}
+                </p>
+              )}
+
+              <label className="block text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                placeholder="Your email..."
+                className="w-full p-2 border border-gray-300 outline-0 !rounded mb-1"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                    message: "Invalid email address",
                   },
                 })}
               />
 
-              <button
-                type="button"
-                onClick={() => setPasswordVisible(!passwordVisible)}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-400"
-              >
-                {passwordVisible ? <Eye /> : <EyeOff />}
-              </button>
-              {errors.password && (
+              {errors.email && (
                 <p className="text-red-500 text-sm">
-                  {String(errors.password.message)}
+                  {String(errors.email.message)}
                 </p>
               )}
-            </div>
 
-            <div className="flex justify-between items-center my-4">
-              <label className="flex items-center text-gray-600">
+              <label className="block text-gray-700 mb-1">Password</label>
+              <div className="relative">
                 <input
-                  type="checkbox"
-                  className="mr-2"
-                  checked={rememberMe}
-                  onChange={() => setRememberMe(!rememberMe)}
+                  type={passwordVisible ? "text" : "password"}
+                  placeholder="Your password..."
+                  className="w-full p-2 border border-gray-300 outline-0 !rounded mb-1"
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters",
+                    },
+                  })}
                 />
-                Remember me
-              </label>
-              <Link
-                href={"/forgot-password"}
-                className="text-[#FF541B] text-sm"
+
+                <button
+                  type="button"
+                  onClick={() => setPasswordVisible(!passwordVisible)}
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-400"
+                >
+                  {passwordVisible ? <Eye /> : <EyeOff />}
+                </button>
+                {errors.password && (
+                  <p className="text-red-500 text-sm">
+                    {String(errors.password.message)}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full text-lg cursor-pointer mt-4 bg-black text-white py-2 rounded-lg"
               >
-                Forgot Password?
-              </Link>
+                Register
+              </button>
+
+              {serverError && (
+                <p className="text-red-500 text-sm mt-2">{serverError}</p>
+              )}
+            </form>
+          ) : (
+            <div>
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Enter OTP
+              </h3>
+              <div className="flex justify-center gap-6">
+                {otp?.map((digit, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    ref={(el) => {
+                      if (el) {
+                        inputRefs.current[index] = el;
+                      }
+                    }}
+                    maxLength={1}
+                    className="w-12 h-12 text-center border border-gray-300 outline-none !rounded"
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  />
+                ))}
+              </div>
+              <button className="w-full mt-4 text-lg cursor-pointer bg-[#FF541B] text-white py-2 rounded-lg">
+                Verify OTP
+              </button>
+              <p className="text-center text-sm mt-4">
+                {canResend ? (
+                  <button
+                    onClick={resendOtp}
+                    className="text-[#FF541B] cursor-pointer"
+                  >
+                    Resend OTP
+                  </button>
+                ) : (
+                  `Resend OTP in ${timer}s`
+                )}
+              </p>
             </div>
-
-            <button
-              type="submit"
-              className="w-full text-lg cursor-pointer bg-black text-white py-2 rounded-lg"
-            >
-              Login
-            </button>
-
-            {serverError && (
-              <p className="text-red-500 text-sm mt-2">{serverError}</p>
-            )}
-          </form>
+          )}
         </div>
       </div>
     </div>
