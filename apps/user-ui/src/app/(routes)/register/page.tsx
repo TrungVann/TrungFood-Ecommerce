@@ -7,11 +7,12 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
 type FormData = {
+  name: string;
   email: string;
   password: string;
 };
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
@@ -28,22 +29,22 @@ const LoginPage = () => {
   return (
     <div className="w-full py-10 min-h-[85vh] bg-[#f1f1f1]">
       <h1 className="text-4xl font-Poppins font-semibold text-black text-center">
-        Login
+        Register
       </h1>
       <p className="text-center text-xl font-medium py-3 text-[#000000099]">
-        Home . Login
+        Home . Register
       </p>
 
       <div className="w-full flex justify-center">
         <div className="md:w-[480px] p-8 bg-white shadow rounded-lg">
           <h3 className="text-3xl font-semibold text-center mb-2">
-            Login to TrungFood
+            Register to TrungFood
           </h3>
           <p className="text-gray-500 text-center mb-4">
-            Don't have an account?
-            <Link href={"/register"} className="text-[#FF541B]">
+            Already have an account?
+            <Link href={"/login"} className="text-[#FF541B]">
               {" "}
-              Sign Up
+              Login
             </Link>
           </p>
 
@@ -55,6 +56,22 @@ const LoginPage = () => {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)}>
+            <label className="block text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              placeholder="Your name..."
+              className="w-full p-2 border border-gray-300 outline-0 !rounded mb-1"
+              {...register("name", {
+                required: "Name is required",
+              })}
+            />
+
+            {errors.name && (
+              <p className="text-red-500 text-sm">
+                {String(errors.name.message)}
+              </p>
+            )}
+
             <label className="block text-gray-700 mb-1">Email</label>
             <input
               type="email"
@@ -129,7 +146,9 @@ const LoginPage = () => {
               Login
             </button>
 
-            {serverError && <p className="text-red-500 text-sm mt-2">{serverError}</p>}
+            {serverError && (
+              <p className="text-red-500 text-sm mt-2">{serverError}</p>
+            )}
           </form>
         </div>
       </div>
@@ -137,4 +156,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;
