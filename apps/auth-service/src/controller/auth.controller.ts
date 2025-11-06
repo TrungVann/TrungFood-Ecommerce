@@ -170,6 +170,19 @@ export const refreshToken = async (
   }
 };
 
+//Get login user info
+export const getUser = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    res.status(201).json({
+      success: true,
+      user,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 //User forgot password
 export const userForgotPassword = async (
   req: Request,
