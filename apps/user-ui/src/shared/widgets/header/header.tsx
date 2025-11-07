@@ -38,7 +38,7 @@ const Header = () => {
                 <Link href={"/profile"}>
                   <CircleUser className="w-[40px] h-[40px]" color="#FF541B" />
                 </Link>
-                <Link href={"/login"}>
+                <Link href={"/profile"}>
                   <span className="block font-medium">Hello,</span>
                   <span className="font-semibold">{user?.name}</span>
                 </Link>
@@ -53,7 +53,9 @@ const Header = () => {
                 </Link>
                 <Link href={"/login"}>
                   <span className="block font-medium">Hello,</span>
-                  <span className="font-semibold">Sign In</span>
+                  <span className="font-semibold">
+                    {isLoading ? "..." : "Sign In"}
+                  </span>
                 </Link>
               </>
             )}
