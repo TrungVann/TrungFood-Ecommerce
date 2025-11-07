@@ -8,8 +8,11 @@ import { Search } from "lucide-react";
 import { CircleUser } from "lucide-react";
 import { Heart } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
+import useUser from "apps/user-ui/src/hooks/useUser";
 
 const Header = () => {
+  const { user, isLoading } = useUser();
+
   return (
     <div className="w-full bg-white">
       <div className="w-[80%] py-5 m-auto flex items-center justify-between">
@@ -30,16 +33,30 @@ const Header = () => {
         </div>
         <div className="flex items-center gap-8 pb-2">
           <div className="flex items-center gap-2">
-            <Link
-              href={"/login"}
-              className="flex items-center justify-center mr-5"
-            >
-              <CircleUser className="w-[40px] h-[40px]" color="#FF541B" />
-            </Link>
-            <Link href={"/login"}>
-              <span className="block font-medium">Hello,</span>
-              <span className="font-semibold">Sign In</span>
-            </Link>
+            {!isLoading && user ? (
+              <>
+                <Link href={"/profile"}>
+                  <CircleUser className="w-[40px] h-[40px]" color="#FF541B" />
+                </Link>
+                <Link href={"/login"}>
+                  <span className="block font-medium">Hello,</span>
+                  <span className="font-semibold">{user?.name}</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href={"/login"}
+                  className="flex items-center justify-center mr-5"
+                >
+                  <CircleUser className="w-[40px] h-[40px]" color="#FF541B" />
+                </Link>
+                <Link href={"/login"}>
+                  <span className="block font-medium">Hello,</span>
+                  <span className="font-semibold">Sign In</span>
+                </Link>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-5">
             <Link href={"/wishlist"} className="relative">
