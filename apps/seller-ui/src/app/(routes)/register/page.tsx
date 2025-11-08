@@ -8,9 +8,10 @@ import { useForm } from "react-hook-form";
 import axios, { AxiosError } from "axios";
 import { countries } from "apps/seller-ui/src/utils/countries";
 import CreateShop from "apps/seller-ui/src/shared/modules/create-shop";
+import StripeLogo from "apps/seller-ui/src/assets/svgs/stripe-logo";
 
 const RegisterPage = () => {
-  const [activeStep, setActiveStep] = useState(2);
+  const [activeStep, setActiveStep] = useState(3);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [canResend, setCanResend] = useState(true);
@@ -108,6 +109,11 @@ const RegisterPage = () => {
     if (sellerData) {
       registerMutation.mutate(sellerData);
     }
+  };
+
+  const connectStripe = () => {
+    try {
+    } catch (error) {}
   };
 
   return (
@@ -336,6 +342,18 @@ const RegisterPage = () => {
         )}
         {activeStep === 2 && (
           <CreateShop sellerId={sellerId} setActiveStep={setActiveStep} />
+        )}
+        {activeStep === 3 && (
+          <div className="text-center">
+            <h3 className="text-2xl font-semibold">Withdraw Method</h3>
+            <br />
+            <button
+              onClick={connectStripe}
+              className="w-full m-auto flex items-center justify-center gap-3 text-lg bg-black text-white py-2 rounded-lg"
+            >
+              <StripeLogo />
+            </button>
+          </div>
         )}
       </div>
     </div>
