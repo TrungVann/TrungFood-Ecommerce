@@ -111,9 +111,19 @@ const RegisterPage = () => {
     }
   };
 
-  const connectStripe = () => {
+  const connectStripe = async () => {
     try {
-    } catch (error) {}
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`,
+        { sellerId }
+      );
+
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.log("Stripe Connection Error:", error);
+    }
   };
 
   return (
