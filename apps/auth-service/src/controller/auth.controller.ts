@@ -135,17 +135,20 @@ export const loginUser = async (
   } catch (error) {}
 };
 
-//Refresh token user
+//Refresh token
 export const refreshToken = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const refreshToken = req.cookies.refresh_token;
+    const refreshToken =
+      req.cookies["refresh_token"] ||
+      req.cookies["seller-fresh-token"] ||
+      req.headers.authorization?.split(" ")[1];
 
     if (!refreshToken) {
-      return new ValidationError("Unauthorized! No refresh token.");
+      return next(new ValidationError("Unauthorized! No refresh token."));
     }
 
     const decoded = jwt.verify(
@@ -154,13 +157,21 @@ export const refreshToken = async (
     ) as { id: string; role: string };
 
     if (!decoded || !decoded.id || !decoded.role) {
-      return new JsonWebTokenError("Forbidden! Invalid refresh token.");
+      return next(new JsonWebTokenError("Forbidden! Invalid refresh token."));
     }
 
-    const user = await prisma.users.findUnique({ where: { id: decoded.id } });
+    let account;
+    if (decoded.role === "user") {
+      account = await prisma.users.findUnique({ where: { id: decoded.id } });
+    } else if (decoded.role === "seller") {
+      account = await prisma.sellers.findUnique({
+        where: { id: decoded.id },
+        include: { shop: true },
+      });
+    }
 
-    if (!user) {
-      return new AuthError("Forbidden! User/Seller not found");
+    if (!account) {
+      return next(new AuthError("Forbidden! User/Seller not found"));
     }
 
     const newAccessToken = jwt.sign(
@@ -169,7 +180,12 @@ export const refreshToken = async (
       { expiresIn: "15m" }
     );
 
-    setCookie(res, "access_token", newAccessToken);
+    if (decoded.role === "user") {
+      setCookie(res, "access_token", newAccessToken);
+    } else if (decoded.role === "seller") {
+      setCookie(res, "seller-access-token", newAccessToken);
+    }
+
     return res.status(201).json({ success: true });
   } catch (error) {
     return next(error);
