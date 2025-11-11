@@ -148,27 +148,47 @@ const SideBarWrapper = () => {
                   <Mail size={20} color={getIconColor("/dashboard/inbox")} />
                 }
               />
-            </SidebarMenu>
-            <SidebarItem
+              <SidebarItem
                 isActive={activeSidebar === "/dashboard/settings"}
                 title="Settings"
                 href="/dashboard/settings"
                 icon={
-                  <Settings size={22} color={getIconColor("/dashboard/settings")} />
+                  <Settings
+                    size={22}
+                    color={getIconColor("/dashboard/settings")}
+                  />
                 }
               />
-              <SidebarItem 
-              isActive={activeSidebar === "/dashboard/notifications"}
-              title="Notifications"
-              href="/dashboard/notifications"
-              icon={
-                <BellRing size={24} color={getIconColor("/dashboard/notifications")}/>
-              }
-                />
+              <SidebarItem
+                isActive={activeSidebar === "/dashboard/notifications"}
+                title="Notifications"
+                href="/dashboard/notifications"
+                icon={
+                  <BellRing
+                    size={24}
+                    color={getIconColor("/dashboard/notifications")}
+                  />
+                }
+              />
             </SidebarMenu>
             <SidebarMenu title="Extras">
-              <SidebarItem isActive={activeSidebar === '/dashboard/discount-codes'} title="Discount Codes" href="/dashboard/discount-codes" icon={<TicketPercent size={22} color={getIconColor("/dashboard/discount-codes")}/>}/>
-              <SidebarItem isActive={activeSidebar === '/logout'} title="Logout" href="/" icon={<LogOut size={20} color={getIconColor("/logout")}/>} />
+              <SidebarItem
+                isActive={activeSidebar === "/dashboard/discount-codes"}
+                title="Discount Codes"
+                href="/dashboard/discount-codes"
+                icon={
+                  <TicketPercent
+                    size={22}
+                    color={getIconColor("/dashboard/discount-codes")}
+                  />
+                }
+              />
+              <SidebarItem
+                isActive={activeSidebar === "/logout"}
+                title="Logout"
+                href="/"
+                icon={<LogOut size={20} color={getIconColor("/logout")} />}
+              />
             </SidebarMenu>
           </div>
         </Sidebar.Body>
