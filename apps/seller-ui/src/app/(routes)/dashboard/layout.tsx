@@ -1,4 +1,4 @@
-import SideBarWrapper from "apps/seller-ui/src/shared/components/Sidebar/Sidebar";
+import SideBarWrapper from "apps/seller-ui/src/shared/components/Sidebar/sidebar";
 import React from "react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
