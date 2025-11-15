@@ -8,6 +8,7 @@ interface BaseProps {
 }
 
 type InputProps = BaseProps & React.InputHTMLAttributes<HTMLInputElement>;
+
 type TextareaProps = BaseProps &
   React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
@@ -28,7 +29,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, Props>(
             ref={ref as React.Ref<HTMLTextAreaElement>}
             className={`w-full border outline-none border-gray-700 bg-transparent p-2 rounded-md text-white ${className}`}
             {...(props as TextareaProps)}
-          ></textarea>
+          />
         ) : (
           <input
             type={type}

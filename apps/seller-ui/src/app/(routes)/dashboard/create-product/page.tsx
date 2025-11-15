@@ -87,33 +87,32 @@ const Page = () => {
               onRemove={handleRemoveImage}
             />
           )}
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            {images.slice(1).map((_, index) => (
+              <ImagePlaceHolder
+                setOpenImageModal={setOpenImageModal}
+                size="765 x 850"
+                key={index}
+                small
+                index={index + 1}
+                onImageChange={handleImageChange}
+                onRemove={handleRemoveImage}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          {images.slice(1).map((_, index) => (
-            <ImagePlaceHolder
-              setOpenImageModal={setOpenImageModal}
-              size="765 x 850"
-              key={index}
-              small
-              index={index + 1}
-              onImageChange={handleImageChange}
-              onRemove={handleRemoveImage}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/** Right side - form inputs */}
-      <div className="md:w-[65%]">
-        <div className="w-full flex gap-6">
-          {/** Product Title Input*/}
-          <div className="w-2/4">
-            <Input
-              label="Product Title *"
-              placeholder="Enter product title"
-              {...register("title", { required: "Title is required" })}
-            />
+        {/** Right side - form inputs */}
+        <div className="md:w-[65%]">
+          <div className="w-full flex gap-6">
+            {/** Product Title Input*/}
+            <div className="w-2/4">
+              <Input
+                label="Product Title *"
+                placeholder="Enter product title"
+                {...register("title", { required: "Title is required" })}
+              />
+            </div>
           </div>
         </div>
       </div>
