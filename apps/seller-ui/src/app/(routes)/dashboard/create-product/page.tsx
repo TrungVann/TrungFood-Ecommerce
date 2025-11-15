@@ -20,38 +20,38 @@ const Page = () => {
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
 
-  const handleImageChange = (file:File|null, index:number) => {
-    const updatedImages = [...images]
+  const handleImageChange = (file: File | null, index: number) => {
+    const updatedImages = [...images];
 
-    updatedImages[index] = file
+    updatedImages[index] = file;
 
-    if(index === images.length - 1 && images.length < 8) {
-      updatedImages.push(null)
+    if (index === images.length - 1 && images.length < 8) {
+      updatedImages.push(null);
     }
 
-    setImages(updatedImages)
-    setValue("images", updatedImages)
-  }
+    setImages(updatedImages);
+    setValue("images", updatedImages);
+  };
 
-  const handleRemoveImage = (index:number) => {
+  const handleRemoveImage = (index: number) => {
     setImages((prevImages) => {
-      let updatedImages = [...prevImages]
+      let updatedImages = [...prevImages];
 
-      if(index === -1) {
-        updatedImages[0] = null
+      if (index === -1) {
+        updatedImages[0] = null;
       } else {
-        updatedImages.splice(index, 1)
+        updatedImages.splice(index, 1);
       }
 
-      if(!updatedImages.includes(null) && updatedImages.length < 8) {
-        updatedImages.push(null)
+      if (!updatedImages.includes(null) && updatedImages.length < 8) {
+        updatedImages.push(null);
       }
 
       return updatedImages;
-    })
+    });
 
-    setValue("images", images)
-  }
+    setValue("images", images);
+  };
 
   const onSubmit = (data: any) => {
     console.log(data);
@@ -75,8 +75,41 @@ const Page = () => {
       {/** Content Layout */}
       <div className="py-4 w-full flex gap-6">
         {/** Left side - Image upload section */}
-        <div className="w-[35%]">
-          <ImagePlaceHolder setOpenImageModal={setOpenImageModal} size="765 x 850" small={false} index={0} onImageChange={handleImageChange} onRemove={handleRemoveImage}/>
+        <div className="md:w-[35%]">
+          {images?.length > 0 && (
+            <ImagePlaceHolder
+              setOpenImageModal={setOpenImageModal}
+              size="765 x 850"
+              small={false}
+              index={0}
+              onImageChange={handleImageChange}
+              onRemove={handleRemoveImage}
+            />
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          {images.slice(1).map((_, index) => (
+            <ImagePlaceHolder
+              setOpenImageModal={setOpenImageModal}
+              size="765 x 850"
+              key={index}
+              small
+              index={index + 1}
+              onImageChange={handleImageChange}
+              onRemove={handleRemoveImage}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/** Right side - form inputs */}
+      <div className="md:w-[65%]">
+        <div className="w-full flex gap-6">
+          {/** Product Title Input*/} 
+          <div className="w-2/4">
+
+          </div>
         </div>
       </div>
     </form>
