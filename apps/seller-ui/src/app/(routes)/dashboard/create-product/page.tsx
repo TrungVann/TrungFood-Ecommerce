@@ -2,6 +2,7 @@
 
 import ImagePlaceHolder from "apps/seller-ui/src/shared/components/Image-placeholder";
 import { ChevronRight } from "lucide-react";
+import Input from "packages/components/input";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -106,9 +107,13 @@ const Page = () => {
       {/** Right side - form inputs */}
       <div className="md:w-[65%]">
         <div className="w-full flex gap-6">
-          {/** Product Title Input*/} 
+          {/** Product Title Input*/}
           <div className="w-2/4">
-
+            <Input
+              label="Product Title *"
+              placeholder="Enter product title"
+              {...register("title", { required: "Title is required" })}
+            />
           </div>
         </div>
       </div>
