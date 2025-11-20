@@ -227,6 +227,22 @@ const Page = () => {
               <div className="mt-2">
                 <CustomProperties control={control} errors={errors} />
               </div>
+
+              <div className="mt-2">
+                <label className="block font-semibold text-gray-300 mb-1">
+                  Cash On Delivery *
+                </label>
+                <select
+                  {...register("cash_on_delivery", {
+                    required: "Cash on Delivery is required",
+                  })}
+                  defaultValue="yes"
+                  className="w-full border outline-none border-gray-700 bg-transparent"
+                >
+                  <option value="yes" className="bg-black">Yes</option>
+                  <option value="no" className="bg-black">No</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
