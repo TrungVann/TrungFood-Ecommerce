@@ -6,6 +6,7 @@ import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import swaggerUi from "swagger-ui-express";
 import axios from "axios";
 import cookieParser from "cookie-parser";
+import initializeSiteConfig from "./libs/initializeSiteConfig";
 
 const app = express();
 
@@ -51,5 +52,12 @@ app.use("/", proxy("http://localhost:6001")); //tất cả request đến API ga
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
+
+  try {
+    initializeSiteConfig();
+    console.log("Site config initialized successfully!");
+  } catch (error) {
+    console.log("Failed to initialize site config: ", error);
+  }
 });
 server.on("error", console.error);

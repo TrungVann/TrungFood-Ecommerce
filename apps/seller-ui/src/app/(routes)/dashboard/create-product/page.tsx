@@ -242,7 +242,17 @@ const Page = () => {
                   <option value="yes" className="bg-black">Yes</option>
                   <option value="no" className="bg-black">No</option>
                 </select>
+                {errors.cash_on_delivery && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.cash_on_delivery.message as string}
+                  </p>
+                )}
               </div>
+            </div>
+            <div className="w-2/4">
+                <label className="block font-semibold text-gray-300 mb-1">
+                  Category *
+                </label>
             </div>
           </div>
         </div>
