@@ -47,8 +47,8 @@ app.get("/gateway-health", (req, res) => {
   res.send({ message: "Welcome to api-gateway!" }); //trả về JSON để check gateway còn hoạt động không
 });
 
+app.use("/product", proxy("http://localhost:6002"));
 app.use("/", proxy("http://localhost:6001")); //tất cả request đến API gateway sẽ được chuyển tiếp sang service chạy ở cổng 6001
-app.use("/product", proxy("http://localhost:6002")); //tất cả request đến API gateway sẽ được chuyển tiếp sang service chạy ở cổng 6001
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
