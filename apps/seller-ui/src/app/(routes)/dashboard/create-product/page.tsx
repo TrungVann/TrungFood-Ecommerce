@@ -8,7 +8,7 @@ import ColorSelector from "packages/components/color-selector";
 import CustomProperties from "packages/components/custom-properties";
 import CustomSpecifications from "packages/components/custom-specifications";
 import Input from "packages/components/input";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 const Page = () => {
@@ -39,14 +39,16 @@ const Page = () => {
     staleTime: 1000 * 60 * 5,
     retry: 2,
   });
- 
+
   const categories = data?.categories || [];
   const subCategoriesData = data?.subCategories || {};
 
   const selectedCategory = watch("category");
   const regularPrice = watch("regular_price");
 
-  console.log(categories, subCategoriesData);
+  const subcategories = useMemo(() => {
+    return selectedCategory ? subCategoriesData[selectedCategory] || [] : [];
+  }, [selectedCategory, subCategoriesData]);
 
   const handleImageChange = (file: File | null, index: number) => {
     const updatedImages = [...images];
@@ -289,7 +291,7 @@ const Page = () => {
                 <Controller
                   name="category"
                   control={control}
-                  rules={{ required: "Category is required" }}
+                  rules={{ required: "Category is required!" }}
                   render={({ field }) => (
                     <select
                       {...field}
@@ -300,7 +302,7 @@ const Page = () => {
                       </option>
                       {categories?.map((category: string) => (
                         <option
-                          value={categories}
+                          value={category}
                           key={category}
                           className="bg-black"
                         >
@@ -311,6 +313,50 @@ const Page = () => {
                   )}
                 />
               )}
+              {errors.category && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.category.message as string}
+                </p>
+              )}
+
+              <div className="mt-2">
+                <label className="black font-semibold text-gray-300 mb-1">
+                  Subcategory *
+                </label>
+                <Controller
+                  name="subCategory"
+                  control={control}
+                  rules={{ required: "Subcategory is required!" }}
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      className="w-full border outline-none border-gray-700 bg-transparent"
+                    >
+                      <option value="" className="bg-black">
+                        Select Subcategory
+                      </option>
+                      {subcategories?.map((subcategory: string) => (
+                        <option
+                          value={subcategory}
+                          key={subcategory}
+                          className="bg-black"
+                        >
+                          {subcategory}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+                {errors.subcategory && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.subcategory.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-2">
+
+              </div>
             </div>
           </div>
         </div>
