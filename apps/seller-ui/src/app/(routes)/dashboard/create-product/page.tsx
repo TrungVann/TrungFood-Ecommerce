@@ -9,6 +9,7 @@ import CustomProperties from "packages/components/custom-properties";
 import CustomSpecifications from "packages/components/custom-specifications";
 import Input from "packages/components/input";
 import RichTextEditor from "packages/components/rich-text-editor";
+import SizeSelector from "packages/components/size-selector";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -479,7 +480,7 @@ const Page = () => {
               </div>
 
               <div className="mt-2">
-                
+                <SizeSelector control={control} errors={errors} />
               </div>
             </div>
           </div>
