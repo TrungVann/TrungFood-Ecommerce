@@ -8,6 +8,7 @@ import ColorSelector from "packages/components/color-selector";
 import CustomProperties from "packages/components/custom-properties";
 import CustomSpecifications from "packages/components/custom-specifications";
 import Input from "packages/components/input";
+import RichTextEditor from "packages/components/rich-text-editor";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -372,11 +373,19 @@ const Page = () => {
                         "Description must be at least 100 words!"
                       );
                     },
-                    render={({field}) => (
-                      <RichTextEditor />
-                    )}
                   }}
+                  render={({ field }) => (
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
                 />
+                {errors.detailed_description && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.detailed_description.message as string}
+                  </p>
+                )}
               </div>
             </div>
           </div>
