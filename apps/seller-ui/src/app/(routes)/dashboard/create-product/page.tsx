@@ -407,6 +407,47 @@ const Page = () => {
                   </p>
                 )}
               </div>
+
+              <div className="mt-2">
+                <Input 
+                  label="Regular price"
+                  placeholder="20$"
+                  {...register("regular_price", {
+                    valueAsNumber: true,
+                    min: {value: 1, message: "Price must be at least 1"},
+                    validate: (value) => !isNaN(value) || "Only numbers are allowed"
+                  })}
+                />
+                {errors.regular_price && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.regular_price.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-2">
+                <Input 
+                  label="Sale Price *"
+                  placeholder="15$"
+                  {...register("sale_price", {
+                    required: "Sale Price is required",
+                    valueAsNumber: true,
+                    min: {value: 1, message: "Sale Price must be at least 1"},
+                    validate: (value) => {
+                      if(isNaN(value)) return "Only numbers are allowed";
+                      if(regularPrice && value >= regularPrice) {
+                        return "Sale Price must be less than Regular Price"
+                      }
+                      return true
+                    }
+                  })}
+                />
+                {errors.sale_price && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.sale_price.message as string}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
