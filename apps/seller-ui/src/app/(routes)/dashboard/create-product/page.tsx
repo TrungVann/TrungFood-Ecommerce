@@ -409,13 +409,14 @@ const Page = () => {
               </div>
 
               <div className="mt-2">
-                <Input 
+                <Input
                   label="Regular price"
                   placeholder="20$"
                   {...register("regular_price", {
                     valueAsNumber: true,
-                    min: {value: 1, message: "Price must be at least 1"},
-                    validate: (value) => !isNaN(value) || "Only numbers are allowed"
+                    min: { value: 1, message: "Price must be at least 1" },
+                    validate: (value) =>
+                      !isNaN(value) || "Only numbers are allowed",
                   })}
                 />
                 {errors.regular_price && (
@@ -426,20 +427,20 @@ const Page = () => {
               </div>
 
               <div className="mt-2">
-                <Input 
+                <Input
                   label="Sale Price *"
                   placeholder="15$"
                   {...register("sale_price", {
                     required: "Sale Price is required",
                     valueAsNumber: true,
-                    min: {value: 1, message: "Sale Price must be at least 1"},
+                    min: { value: 1, message: "Sale Price must be at least 1" },
                     validate: (value) => {
-                      if(isNaN(value)) return "Only numbers are allowed";
-                      if(regularPrice && value >= regularPrice) {
-                        return "Sale Price must be less than Regular Price"
+                      if (isNaN(value)) return "Only numbers are allowed";
+                      if (regularPrice && value >= regularPrice) {
+                        return "Sale Price must be less than Regular Price";
                       }
-                      return true
-                    }
+                      return true;
+                    },
                   })}
                 />
                 {errors.sale_price && (
@@ -447,6 +448,38 @@ const Page = () => {
                     {errors.sale_price.message as string}
                   </p>
                 )}
+              </div>
+
+              <div className="mt-2">
+                <Input
+                  label="Stock *"
+                  placeholder="100"
+                  {...register("stock", {
+                    required: "Stock is required!",
+                    valueAsNumber: true,
+                    min: { value: 1, message: "Stock must be at least 1" },
+                    max: {
+                      value: 1000,
+                      message: "Stock cannot exceed 1,000",
+                    },
+                    validate: (value) => {
+                      if (!isNaN(value)) return "Only numbers are allowed!";
+                      if (!Number.isInteger(value)) {
+                        return "Stock must be a whole number!";
+                      }
+                      return true;
+                    },
+                  })}
+                />
+                {errors.stock && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.stock.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-2">
+                
               </div>
             </div>
           </div>
