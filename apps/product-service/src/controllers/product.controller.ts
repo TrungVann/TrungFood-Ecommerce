@@ -25,7 +25,7 @@ export const getCategories = async (
 };
 
 // create discount codes
-export const createDiscountCode = async (
+export const createDiscountCodes = async (
   req: any,
   res: Response,
   next: NextFunction
