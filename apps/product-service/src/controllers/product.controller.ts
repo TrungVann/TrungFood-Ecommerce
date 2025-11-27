@@ -60,3 +60,20 @@ export const createDiscountCode = async (
     next(error);
   }
 };
+
+// get discount codes
+export const getDiscountCodes = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const discount_codes = await prisma.discount_codes.findMany({
+      where: { sellerId: req.seller.id },
+    });
+
+    res.status(201).json({ success: true, discount_codes });
+  } catch (error) {
+    next(error);
+  }
+};
