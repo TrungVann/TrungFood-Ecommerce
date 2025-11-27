@@ -24,7 +24,7 @@ const Page = () => {
   } = useForm();
 
   const [openImageModal, setOpenImageModal] = useState(false);
-  const [isChanged, setIsChanged] = useState(false);
+  const [isChanged, setIsChanged] = useState(true);
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
 
@@ -88,6 +88,8 @@ const Page = () => {
   const onSubmit = (data: any) => {
     console.log(data);
   };
+
+  const handleSaveDraft = () => {};
 
   return (
     <form
@@ -482,9 +484,30 @@ const Page = () => {
               <div className="mt-2">
                 <SizeSelector control={control} errors={errors} />
               </div>
+
+              <div className="mt-3">
+                <label className="block font-semibold text-gray-300 mb-1">
+                  Select Discount Codes (optional)
+                </label>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6 flex justify-end gap-3">
+        {isChanged && (
+          <button
+            type="button"
+            className="px-4 py-2 bg-gray-700 text-white rounded-md"
+            onClick={handleSaveDraft}
+          >
+            Save Draft
+          </button>
+        )}
+        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md" disabled={loading}>
+          {loading ? "Creating..." : "Create"}
+        </button>
       </div>
     </form>
   );
