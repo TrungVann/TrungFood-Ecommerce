@@ -77,3 +77,36 @@ export const getDiscountCodes = async (
     next(error);
   }
 };
+
+// delete discount codes
+export const deleteDiscountCode = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const sellerId = req.seller?.id;
+
+    const discountCode = await prisma.discount_codes.findUnique({
+      where: { id },
+      select: { id: true, sellerId: true },
+    });
+
+    if (!discountCode) {
+      return next(new ValidationError("Discount code not found!"));
+    }
+
+    if (discountCode.sellerId !== sellerId) {
+      return next(new ValidationError("Unauthorized access!"));
+    }
+
+    await prisma.discount_codes.delete({ where: { id } });
+
+    return res
+      .status(200)
+      .json({ message: "Discount code successfully deleted" });
+  } catch (error) {
+    next(error);
+  }
+};
