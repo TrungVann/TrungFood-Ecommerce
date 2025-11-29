@@ -53,13 +53,15 @@ const Page = () => {
 
   const deleteDiscountCodeMutation = useMutation({
     mutationFn: async (discountId) => {
-      await axiosInstance.delete(`/product/api/delete-discount-code/${discountId}`)
+      await axiosInstance.delete(
+        `/product/api/delete-discount-code/${discountId}`
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["shop-discounts"]})
-      setShowDeleteModal(false)
-    }
-  })
+      queryClient.invalidateQueries({ queryKey: ["shop-discounts"] });
+      setShowDeleteModal(false);
+    },
+  });
 
   const handleDeleteClick = async (discount: any) => {
     setSelectedDiscount(discount);
@@ -247,7 +249,9 @@ const Page = () => {
         <DeleteDiscountCodeModal
           discount={selectedDiscount}
           onClose={() => setShowDeleteModal(false)}
-          onConfirm={() => deleteDiscountCodeMutation.mutate(selectedDiscount?.id)}
+          onConfirm={() =>
+            deleteDiscountCodeMutation.mutate(selectedDiscount?.id)
+          }
         />
       )}
     </div>
