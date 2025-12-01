@@ -12,7 +12,11 @@ import RichTextEditor from "packages/components/rich-text-editor";
 import SizeSelector from "packages/components/size-selector";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { isObject } from "util";
+
+interface UploadedImage {
+  fileId: string;
+  file_url: string;
+}
 
 const Page = () => {
   const {
@@ -26,7 +30,7 @@ const Page = () => {
 
   const [openImageModal, setOpenImageModal] = useState(false);
   const [isChanged, setIsChanged] = useState(true);
-  const [images, setImages] = useState<(File | null)[]>([null]);
+  const [images, setImages] = useState<(UploadedImage | null)[]>([]);
   const [loading, setLoading] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
@@ -71,50 +75,63 @@ const Page = () => {
   };
 
   const handleImageChange = async (file: File | null, index: number) => {
-    if (!file) {
-      return;
-    }
+    //
+    if (!file) return; //
 
     try {
-      const fileName = await convertFileToBase64(file);
+      const fileName = await convertFileToBase64(file); //
+
       const response = await axiosInstance.post(
-        "/product/api/upload-product-image",
-        fileName
+        //
+        "/product/api/upload-product-image", //
+        { fileName }
       );
-      const updatedImages = [...images];
-      updatedImages[index] = response.data.file_name;
+      const uploadedImage: UploadedImage = {
+        fileId: response.data.fileId,
+        file_url: response.data.file_url,
+      };
+
+      const updatedImages = [...images]; //
+
+      updatedImages[index] = uploadedImage; //
 
       if (index === images.length - 1 && updatedImages.length < 8) {
-        updatedImages.push(null);
+        //
+        updatedImages.push(null); //
       }
 
-      setImages(updatedImages);
-      setValue("images", updatedImages);
+      setImages(updatedImages); //
+      setValue("images", updatedImages); //
     } catch (error) {
-      console.log(error);
+      //
+      console.log(error); //
     }
   };
 
   const handleRemoveImage = (index: number) => {
     try {
-      const updatedImages = [...images];
+      //
+      const updatedImages = [...images]; //
 
-      const imageToDelete = updatedImages[index];
-      if (imageToDelete && typeof imageToDelete === "string") {
+      const imageToDelete = updatedImages[index]; //
+      if (imageToDelete && typeof imageToDelete === "object") {
+        //
         //delete our picture
       }
 
-      updatedImages.splice(index, 1);
+      updatedImages.splice(index, 1); //
 
       //Add null placeholder
       if (!updatedImages.includes(null) && updatedImages.length < 8) {
-        updatedImages.push(null);
+        //
+        updatedImages.push(null); //
       }
 
-      setImages(updatedImages);
-      setValue("images", updatedImages);
+      setImages(updatedImages); //
+      setValue("images", updatedImages); //
     } catch (error) {
-      console.log(error);
+      //
+      console.log(error); //
     }
   };
 

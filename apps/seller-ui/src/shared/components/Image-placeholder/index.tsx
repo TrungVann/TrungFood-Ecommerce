@@ -32,10 +32,8 @@ const ImagePlaceHolder = ({
   return (
     <div
       className={`relative ${
-        small
-          ? "h-[180px]"
-          : "h-[450px] w-full cursor-pointer bg-[#1e1e1e1e] border border-gray-600 rounded-lg flex flex-col justify-center"
-      }`}
+        small ? "h-[180px]" : "h-[450px]"
+      } w-full cursor-pointer bg-[#1e1e1e1e] border border-gray-600 rounded-lg flex flex-col justify-center`}
     >
       <input
         type="file"
