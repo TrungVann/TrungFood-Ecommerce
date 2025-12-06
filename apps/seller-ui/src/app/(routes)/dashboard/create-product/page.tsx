@@ -277,15 +277,15 @@ const Page = () => {
 
               <div className="mt-2">
                 <Input
-                  label="Warranty *"
-                  placeholder="1 Year / No Warranty"
-                  {...register("warranty", {
-                    required: "Warranty is required",
+                  label="Quality Guarantee *"
+                  placeholder="Đổi món mới nếu không hài lòng"
+                  {...register("quality_guarantee", {
+                    required: "Quality Guarantee is required",
                   })}
                 />
-                {errors.tags && (
+                {errors.quality_guarantee && (
                   <p className="text-red-500 text-xs mt-1">
-                    {errors.tags.message as string}
+                    {errors.quality_guarantee.message as string}
                   </p>
                 )}
               </div>

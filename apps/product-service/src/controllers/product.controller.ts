@@ -1,4 +1,4 @@
-import { ValidationError } from "@packages/error-handler";
+import { AuthError, ValidationError } from "@packages/error-handler";
 import { imagekit } from "@packages/libs/imagekit";
 
 import prisma from "@packages/libs/prisma";
@@ -161,6 +161,40 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
+    const {
+      title,
+      description,
+      detailed_description,
+      quality_guarantee,
+      custom_specification,
+      slug,
+      tags,
+      cash_on_delivery,
+      brand,
+      video_url,
+      category,
+      sizes = [],
+      discountCodes,
+      stock,
+      sale_price,
+      regular_price,
+      subCategory,
+      customProperties = {},
+      images = []
+    } = req.body;
+
+    if(!title || !slug || !description || !category || !subCategory || !sale_price || !images || !tags || !stock || !regular_price || !stock) {
+      return next(new ValidationError("Missing required fields!"))
+    }
+
+    if(!req.seller.id) {
+      return next(new AuthError("Only seller can create products!"))
+    }
+
+    const slugChecking = await prisma.products.findUnique({
+      where: {slug}
+    })
+
   } catch (error) {
     next(error);
   }
