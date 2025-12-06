@@ -153,3 +153,15 @@ export const deleteProductImage = async (
     next(error);
   }
 };
+
+// create product
+export const createProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};

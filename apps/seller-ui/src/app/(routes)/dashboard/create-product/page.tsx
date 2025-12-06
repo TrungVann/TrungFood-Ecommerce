@@ -2,8 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import ImagePlaceHolder from "apps/seller-ui/src/shared/components/Image-placeholder";
+import { enhancements } from "apps/seller-ui/src/utils/AI.enhancements";
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight, Wand, X } from "lucide-react";
 import Image from "next/image";
 import ColorSelector from "packages/components/color-selector";
 import CustomProperties from "packages/components/custom-properties";
@@ -31,10 +32,12 @@ const Page = () => {
 
   const [openImageModal, setOpenImageModal] = useState(false);
   const [isChanged, setIsChanged] = useState(true);
+  const [activeEffect, setActiveEffect] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState("");
   const [pictureUploadingLoader, setPictureUploadingLoader] = useState(false);
   const [images, setImages] = useState<(UploadedImage | null)[]>([null]);
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
@@ -143,6 +146,25 @@ const Page = () => {
 
   const onSubmit = (data: any) => {
     console.log(data);
+  };
+
+  const applyTransformation = async (transformation: string) => {
+    if (!selectedImage || processing) return;
+    setProcessing(true);
+    setActiveEffect(transformation);
+
+    try {
+      //Tách bỏ toàn bộ query cũ
+      const baseUrl = selectedImage.split("?")[0];
+
+      //Gắn transform mới
+      const transformedUrl = `${baseUrl}?tr=${transformation}`;
+      setSelectedImage(transformedUrl);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleSaveDraft = () => {};
@@ -609,7 +631,21 @@ const Page = () => {
                   AI Enhancements
                 </h3>
                 <div className="grid grid-cols-2 gap-3 mx-h-[250px] overflow-y-auto">
-
+                  {enhancements?.map(({ label, effect }) => (
+                    <button
+                      key={effect}
+                      className={`p-2 rounded-md flex items-center gap-2 ${
+                        activeEffect === effect
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-700 hover:bg-gray-600"
+                      }`}
+                      onClick={() => applyTransformation(effect)}
+                      disabled={processing}
+                    >
+                      <Wand size={18} />
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
