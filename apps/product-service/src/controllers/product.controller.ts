@@ -279,3 +279,10 @@ export const getShopProducts = async (
     return next(error);
   }
 };
+
+// delete product
+export const deleteProduct = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {};

@@ -19,8 +19,7 @@ router.get("/get-discount-codes", isAuthenticated, getDiscountCodes);
 router.delete("/delete-discount-code/:id", isAuthenticated, deleteDiscountCode);
 router.post("/upload-product-image", isAuthenticated, uploadProductImage);
 router.delete("/delete-product-image", isAuthenticated, deleteProductImage);
-router.post("/create-product", isAuthenticated, createProduct)
-router.get("/get-shop-product", isAuthenticated, getShopProducts)
-
+router.post("/create-product", isAuthenticated, createProduct);
+router.get("/get-shop-products", isAuthenticated, getShopProducts);
 
 export default router;
