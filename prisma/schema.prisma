@@ -110,7 +110,7 @@ model products {
   detailed_description    String
   images                  images[]
   video_url               String?
-  tags                    String?
+  tags                    String[]
   brand                   String?
   sizes                   String[]
   starting_date           DateTime?

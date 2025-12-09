@@ -6,6 +6,7 @@ import { enhancements } from "apps/seller-ui/src/utils/AI.enhancements";
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
 import { ChevronRight, Wand, X } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import ColorSelector from "packages/components/color-selector";
 import CustomProperties from "packages/components/custom-properties";
 import CustomSpecifications from "packages/components/custom-specifications";
@@ -14,6 +15,7 @@ import RichTextEditor from "packages/components/rich-text-editor";
 import SizeSelector from "packages/components/size-selector";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 interface UploadedImage {
   fileId: string;
@@ -38,6 +40,7 @@ const Page = () => {
   const [images, setImages] = useState<(UploadedImage | null)[]>([null]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const router = useRouter();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
@@ -144,8 +147,18 @@ const Page = () => {
     }
   };
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit = async (data: any) => {
+    console.log("Submitting data:", data);
+
+    try {
+      setLoading(true);
+      await axiosInstance.post("/product/api/create-product", data);
+      router.push("/dashboard/all-products");
+    } catch (error: any) {
+      toast.error(error?.data?.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const applyTransformation = async (transformation: string) => {
@@ -242,7 +255,7 @@ const Page = () => {
                   cols={10}
                   label="Short Description * (Max 150 words)"
                   placeholder="Enter product description"
-                  {...register("description", {
+                  {...register("short_description", {
                     required: "Description is required",
                     validate: (value) => {
                       const wordCount = value.trim().split(/\s+/).length;
@@ -330,9 +343,9 @@ const Page = () => {
                 )}
               </div>
 
-              <div className="mt-2">
+              {/* <div className="mt-2">
                 <ColorSelector control={control} errors={errors} />
-              </div>
+              </div> */}
 
               <div className="mt-2">
                 <CustomSpecifications control={control} errors={errors} />
@@ -550,7 +563,7 @@ const Page = () => {
                       message: "Stock cannot exceed 1,000",
                     },
                     validate: (value) => {
-                      if (!isNaN(value)) return "Only numbers are allowed!";
+                      if (isNaN(value)) return "Only numbers are allowed!";
                       if (!Number.isInteger(value)) {
                         return "Stock must be a whole number!";
                       }
