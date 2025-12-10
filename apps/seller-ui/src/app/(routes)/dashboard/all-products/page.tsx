@@ -27,6 +27,14 @@ const fetchProducts = async () => {
   return res?.data?.products;
 };
 
+const deleteProduct = async (productId: string) => {
+  await axiosInstance.delete(`/product/api/delete-product/${productId}`);
+};
+
+const restoreProduct = async (productId: string) => {
+  await axiosInstance.put(`/product/api/restore-product/${productId}`);
+};
+
 const ProductList = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -39,6 +47,24 @@ const ProductList = () => {
     queryKey: ["shop-products"],
     queryFn: fetchProducts,
     staleTime: 1000 * 60 * 5,
+  });
+
+  //Delete Product Mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+      setShowDeleteModal(false);
+    },
+  });
+
+  //Restore Product Mutation
+  const restoreMutation = useMutation({
+    mutationFn: restoreProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+      setShowDeleteModal(false);
+    },
   });
 
   const columns = useMemo(
@@ -128,7 +154,10 @@ const ProductList = () => {
             <button className="text-green-400 hover:text-green-300 transition">
               <BarChart size={18} />
             </button>
-            <button className="text-red-400 hover:text-red-300 transition">
+            <button
+              className="text-red-400 hover:text-red-300 transition"
+              onClick={() => openDeleteModal(row.original)}
+            >
               <Trash size={18} />
             </button>
           </div>
@@ -147,6 +176,12 @@ const ProductList = () => {
     state: { globalFilter },
     onGlobalFilterChange: setGlobalFilter,
   });
+
+  const openDeleteModal = (product: any) => {
+    setSelectedProduct(product);
+    setShowDeleteModal(true);
+  };
+
   return (
     <div className="w-full min-h-screen p-8">
       {/* Header */}
