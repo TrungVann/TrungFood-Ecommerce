@@ -163,7 +163,7 @@ export const refreshToken = async (
   try {
     const refreshToken =
       req.cookies["refresh_token"] ||
-      req.cookies["seller-fresh-token"] ||
+      req.cookies["seller-refresh-token"] ||
       req.headers.authorization?.split(" ")[1];
 
     if (!refreshToken) {
