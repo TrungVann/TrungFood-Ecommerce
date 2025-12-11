@@ -1,3 +1,7 @@
+/**
+ * Controller xử lý xác thực User & Seller
+ * Bao gồm: Đăng ký, đăng nhập, OTP, Reset mật khẩu, Quản lý token, tạo shop và Stripe connect
+ */
 import { NextFunction, Request, Response } from "express";
 import {
   checkOtpRestrictions,
@@ -17,28 +21,36 @@ import { setCookie } from "../utils/cookies/setCookie";
 
 import Stripe from "stripe";
 
+// Khởi tạo Stripe với API key bảo mật
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-02-24.acacia" as any,
 });
 
-//Register a new user
+// ====================== USER HANDLERS ========================
+
+// Đăng ký người dùng mới — gửi OTP xác minh email
 export const userRegistration = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
+    // Validate dữ liệu đầu vào
     validateRegistrationData(req.body, "user");
     const { name, email } = req.body;
 
+    // Kiểm tra xem email đã tồn tại user nào chưa
     const existingUser = await prisma.users.findUnique({ where: { email } });
 
     if (existingUser) {
       return next(new ValidationError("User already exists with this email!"));
     }
 
+    // Kiểm tra giới hạn gửi OTP, tránh spam
     await checkOtpRestrictions(email, next);
     await trackOtpRequests(email, next);
+
+    // Gửi OTP xác minh tài khoản
     await sendOtp(email, name, "user-activation-mail");
 
     res
@@ -49,7 +61,7 @@ export const userRegistration = async (
   }
 };
 
-//Verify user with OTP
+// Xác minh OTP và tạo tài khoản User
 export const verifyUser = async (
   req: Request,
   res: Response,
@@ -61,13 +73,16 @@ export const verifyUser = async (
       return next(new ValidationError("All fields are required!"));
     }
 
+    // Không tạo user nếu email đã tồn tại
     const existingUser = await prisma.users.findUnique({ where: { email } });
-
     if (existingUser) {
       return next(new ValidationError("User already exists with this email!"));
     }
 
+    // Xác minh OTP
     await verifyOtp(email, otp, next);
+
+    // Hash mật khẩu trước khi lưu
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await prisma.users.create({
@@ -82,7 +97,7 @@ export const verifyUser = async (
   }
 };
 
-//Login user
+//Đăng nhập User
 export const loginUser = async (
   req: Request,
   res: Response,
@@ -101,16 +116,17 @@ export const loginUser = async (
       return next(new AuthError("User doesn't exist!"));
     }
 
-    //verify password
+    // Kiểm tra mật khẩu
     const isMatch = await bcrypt.compare(password, user.password!);
     if (!isMatch) {
       return next(new AuthError("Invalid email or password!"));
     }
 
+    // Xóa cookie seller nếu từng đăng nhập
     res.clearCookie("seller-access_token");
     res.clearCookie("seller-refresh_token");
 
-    //generate access token and refresh token
+    // Tạo access token và refresh token
     const accessToken = jwt.sign(
       { id: user.id, role: "user" },
       process.env.ACCESS_TOKEN_SECRET as string,
@@ -127,7 +143,7 @@ export const loginUser = async (
       }
     );
 
-    //store the refresh and access token in httpOnly secure cookie
+    // Lưu token dưới dạng cookie bảo mật
     setCookie(res, "refresh_token", refreshToken);
     setCookie(res, "access_token", accessToken);
 
@@ -138,7 +154,7 @@ export const loginUser = async (
   } catch (error) {}
 };
 
-//Refresh token
+// Refresh token — tạo access token mới
 export const refreshToken = async (
   req: any,
   res: Response,
@@ -154,6 +170,7 @@ export const refreshToken = async (
       return next(new ValidationError("Unauthorized! No refresh token."));
     }
 
+    // Xác minh token
     const decoded = jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET as string
@@ -163,6 +180,7 @@ export const refreshToken = async (
       return next(new JsonWebTokenError("Forbidden! Invalid refresh token."));
     }
 
+    // Xác định loại tài khoản
     let account;
     if (decoded.role === "user") {
       account = await prisma.users.findUnique({ where: { id: decoded.id } });
@@ -177,12 +195,14 @@ export const refreshToken = async (
       return next(new AuthError("Forbidden! User/Seller not found"));
     }
 
+    // Tạo access token mới
     const newAccessToken = jwt.sign(
       { id: decoded.id, role: decoded.role },
       process.env.ACCESS_TOKEN_SECRET as string,
       { expiresIn: "15m" }
     );
 
+    // Set theo loại user/seller
     if (decoded.role === "user") {
       setCookie(res, "access_token", newAccessToken);
     } else if (decoded.role === "seller") {
@@ -197,7 +217,7 @@ export const refreshToken = async (
   }
 };
 
-//Get login user info
+// Lấy thông tin User đang đăng nhập
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
@@ -210,7 +230,7 @@ export const getUser = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
-//User forgot password
+// Quên mật khẩu User — gửi OTP
 export const userForgotPassword = async (
   req: Request,
   res: Response,
@@ -219,7 +239,7 @@ export const userForgotPassword = async (
   await handleForgotPassword(req, res, next, "user");
 };
 
-//Verify forgot password OTP
+// Xác minh OTP quên mật khẩu
 export const verifyUserForgotPassword = async (
   req: Request,
   res: Response,
@@ -228,7 +248,7 @@ export const verifyUserForgotPassword = async (
   await verifyForgotPasswordOtp(req, res, next);
 };
 
-//Reset user password
+// Reset mật khẩu User
 export const resetUserPassword = async (
   req: Request,
   res: Response,
@@ -246,7 +266,7 @@ export const resetUserPassword = async (
       return next(new ValidationError("User not found!"));
     }
 
-    //compare new password with the existing one
+    // Không cho đặt lại mật khẩu cũ
     const isSamePassword = await bcrypt.compare(newPassword, user.password!);
 
     if (isSamePassword) {
@@ -257,7 +277,7 @@ export const resetUserPassword = async (
       );
     }
 
-    //hash the new password
+    // Hash mật khẩu mới
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await prisma.users.update({
@@ -271,7 +291,9 @@ export const resetUserPassword = async (
   }
 };
 
-//Register a new seller
+// ====================== SELLER HANDLERS ========================
+
+// Đăng ký người bán mới
 export const registerSeller = async (
   req: Request,
   res: Response,
@@ -301,7 +323,7 @@ export const registerSeller = async (
   }
 };
 
-//Verify seller with OTP
+// Xác minh OTP và tạo Seller mới
 export const verifySeller = async (
   req: Request,
   res: Response,
@@ -346,7 +368,7 @@ export const verifySeller = async (
   }
 };
 
-//Create a new shop
+// Tạo shop cho Seller
 export const createShop = async (
   req: Request,
   res: Response,
@@ -382,7 +404,7 @@ export const createShop = async (
   }
 };
 
-//Create stripe connect account link
+// Tạo Stripe Connect (để nhận thanh toán)
 export const createStripeConnectLink = async (
   req: Request,
   res: Response,
@@ -404,6 +426,7 @@ export const createStripeConnectLink = async (
       return next(new ValidationError("Seller is not available with this id!"));
     }
 
+    // Tạo tài khoản stripe express
     const account = await stripe.accounts.create({
       type: "express",
       email: seller?.email,
@@ -414,6 +437,7 @@ export const createStripeConnectLink = async (
       },
     });
 
+    // Lưu stripeId vào database
     await prisma.sellers.update({
       where: {
         id: sellerId,
@@ -423,6 +447,7 @@ export const createStripeConnectLink = async (
       },
     });
 
+    // Tạo link onboarding Stripe
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: `http://localhost:3000/success`,
@@ -436,7 +461,7 @@ export const createStripeConnectLink = async (
   }
 };
 
-//Login seller
+// Đăng nhập tài khoản người bán
 export const loginSeller = async (
   req: Request,
   res: Response,
@@ -444,25 +469,30 @@ export const loginSeller = async (
 ) => {
   try {
     const { email, password } = req.body;
+
+    // Validate input
     if (!email || !password) {
       return next(new ValidationError("Email and password are required!"));
     }
 
+    // Kiểm tra seller tồn tại theo email
     const seller = await prisma.sellers.findUnique({ where: { email } });
     if (!seller) {
+      // Không trả thông tin chính xác để tránh lộ tài khoản hợp lệ
       return next(new ValidationError("Invalid email or password!"));
     }
 
-    //Verify password
+    // Xác thực password so với hash trong DB
     const isMatch = await bcrypt.compare(password, seller.password!);
     if (!isMatch) {
       return next(new ValidationError("Invalid email or password!"));
     }
 
+    // Xoá cookie cũ trước khi tạo token mới tránh lưu token cũ của session trước đó
     res.clearCookie("access_token");
     res.clearCookie("refresh_token");
 
-    //Generate access and refresh tokens
+    // Tạo access token và refresh token
     const accessToken = jwt.sign(
       { id: seller.id, role: "seller" },
       process.env.ACCESS_TOKEN_SECRET as string,
@@ -474,10 +504,11 @@ export const loginSeller = async (
       { expiresIn: "7d" }
     );
 
-    //Store refresh token and access token
+    // Lưu token vào cookie HTTP Only => tăng bảo mật, tránh bị JS trên trình duyệt truy cập
     setCookie(res, "seller-refresh-token", refreshToken);
     setCookie(res, "seller-access-token", accessToken);
 
+    // Trả về thông tin cơ bản của seller
     res.status(200).json({
       message: "Login successful!",
       seller: {
@@ -489,7 +520,7 @@ export const loginSeller = async (
   } catch (error) {}
 };
 
-//Get logged in seller
+//Lấy người bán hàng đã đăng nhập
 export const getSeller = async (
   req: any,
   res: Response,
@@ -497,6 +528,7 @@ export const getSeller = async (
 ) => {
   try {
     const seller = req.seller;
+
     res.status(201).json({ success: true, seller });
   } catch (error) {
     next(error);
