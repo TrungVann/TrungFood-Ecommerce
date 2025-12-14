@@ -2,6 +2,7 @@ import { AuthError, ValidationError } from "@packages/error-handler";
 import { imagekit } from "@packages/libs/imagekit";
 
 import prisma from "@packages/libs/prisma";
+import { Prisma } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 
 // get product categories
@@ -295,66 +296,141 @@ export const deleteProduct = async (
       select: { id: true, shopId: true, isDeleted: true },
     });
 
-    if(!product) {
-      return next(new ValidationError("Product not found"))
+    if (!product) {
+      return next(new ValidationError("Product not found"));
     }
 
-    if(product.shopId !== sellerId) {
-      return next(new ValidationError("Unauthorized action"))
+    if (product.shopId !== sellerId) {
+      return next(new ValidationError("Unauthorized action"));
     }
 
-    if(product.isDeleted) {
-      return next(new ValidationError("Product is already deleted"))
+    if (product.isDeleted) {
+      return next(new ValidationError("Product is already deleted"));
     }
 
     const deletedProduct = await prisma.products.update({
-      where: {id: productId},
+      where: { id: productId },
       data: {
         isDeleted: true,
-        deletedAt: new Date(Date.now() + 24*60*60*1000)
-      }
-    })
+        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
 
     return res.status(200).json({
-      message: "Product is scheduled for deletion in 24 hours. You can restore it within this ",
-      deletedAt: deletedProduct.deletedAt
-    })
+      message:
+        "Product is scheduled for deletion in 24 hours. You can restore it within this ",
+      deletedAt: deletedProduct.deletedAt,
+    });
   } catch (error) {
-    return next(error)
+    return next(error);
   }
 };
 
 // restore product
-export const restoreProduct = async (req:any, res:Response, next:NextFunction) => {
+export const restoreProduct = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const {productId} = req.params
+    const { productId } = req.params;
 
-    const sellerId = req.seller?.shop?.id
+    const sellerId = req.seller?.shop?.id;
 
     const product = await prisma.products.findUnique({
-      where: {id:productId},
-      select: {id:true, shopId:true, isDeleted: true}
-    })
+      where: { id: productId },
+      select: { id: true, shopId: true, isDeleted: true },
+    });
 
-    if(!product) {
-      return next(new ValidationError("Product not found"))
+    if (!product) {
+      return next(new ValidationError("Product not found"));
     }
 
-    if(product.shopId !== sellerId) {
-      return next(new ValidationError("Unauthorized action"))
+    if (product.shopId !== sellerId) {
+      return next(new ValidationError("Unauthorized action"));
     }
 
-    if(!product.isDeleted) {
-      return res.status(400).json({message:"Product is not in deleted state"})
+    if (!product.isDeleted) {
+      return res
+        .status(400)
+        .json({ message: "Product is not in deleted state" });
     }
 
     await prisma.products.update({
-      where: {id:productId},
-      data: {isDeleted: false, deletedAt: null}
-    })
+      where: { id: productId },
+      data: { isDeleted: false, deletedAt: null },
+    });
 
-    return res.status(200).json({message: "Product successfully restored!"})
+    return res.status(200).json({ message: "Product successfully restored!" });
   } catch (error) {
-    return res.status(500).json({message: "Error restoring product", error})
+    return res.status(500).json({ message: "Error restoring product", error });
   }
-}
+};
+
+// get seller stripe information (chưa hoàn thiện)
+export const getStripeAccount = async () => {};
+
+// get All products
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+    const type = req.query.type;
+
+    const baseFilter = {
+      OR: [
+        {
+          starting_date: null,
+        },
+        {
+          ending_date: null,
+        },
+      ],
+    };
+
+    const orderBy: Prisma.productsOrderByWithRelationInput =
+      type === "latest"
+        ? { createdAt: "desc" as Prisma.SortOrder }
+        : { totalSales: "desc" as Prisma.SortOrder };
+
+    const [products, total, top10Products] = await Promise.all([
+      prisma.products.findMany({
+        skip,
+        take: limit,
+        include: {
+          images: true,
+          Shop: true,
+        },
+        where: baseFilter,
+        orderBy: {
+          totalSales: "desc",
+        },
+      }),
+
+      prisma.products.count({ where: baseFilter }),
+      prisma.products.findMany({
+        take: 10,
+        where: baseFilter,
+        orderBy,
+      }),
+    ]);
+
+    res.status(200).json({
+      products,
+      top10By: type === "latest" ? "latest" : "topSales",
+      top10Products,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    next(error)
+  }
+};
+
+
