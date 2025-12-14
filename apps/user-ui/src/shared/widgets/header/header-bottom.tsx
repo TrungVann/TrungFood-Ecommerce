@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { navItems } from "apps/user-ui/src/configs/constants";
+import useUser from "apps/user-ui/src/hooks/useUser";
+import { useStore } from "apps/user-ui/src/store";
+import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 import {
   AlignLeft,
   ChevronDown,
@@ -8,13 +12,16 @@ import {
   Heart,
   ShoppingCart,
 } from "lucide-react";
-import { navItems } from "apps/user-ui/src/configs/constants";
 import Link from "next/link";
-import useUser from "apps/user-ui/src/hooks/useUser";
+import React, { useEffect, useState } from "react";
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  // const [expandedCategory, setExpandedCategory] = useState<string|null>("")
+  const wishlist = useStore((state:any) => state.wishlist)
+  const cart = useStore((state:any) => state.cart)
+
   const { user, isLoading } = useUser();
 
   console.log(user);
@@ -121,13 +128,13 @@ const HeaderBottom = () => {
                 <Link href={"/wishlist"} className="relative">
                   <Heart />
                   <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                    <span className="text-white font-medium text-sm">0</span>
+                    <span className="text-white font-medium text-sm">{wishlist?.length}</span>
                   </div>
                 </Link>
                 <Link href={"/cart"} className="relative">
                   <ShoppingCart />
                   <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                    <span className="text-white font-medium text-sm">9+</span>
+                    <span className="text-white font-medium text-sm">{cart?.length}</span>
                   </div>
                 </Link>
               </div>

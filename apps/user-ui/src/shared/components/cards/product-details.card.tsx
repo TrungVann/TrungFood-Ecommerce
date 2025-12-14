@@ -1,5 +1,9 @@
 "use client";
+import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
+import useLocationTracking from "apps/user-ui/src/hooks/useLocationTracking";
+import useUser from "apps/user-ui/src/hooks/useUser";
 import Ratings from "apps/user-ui/src/shared/components/ratings";
+import { useStore } from "apps/user-ui/src/store";
 import { Heart, MapPin, ShoppingCart, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,10 +21,21 @@ const ProductDetailsCard = ({
   const [isSizeSelected, setIsSizeSelected] = useState(data?.sizes?.[0] || "");
   const [quantity, setQuantity] = useState(1);
 
-  const estimatedDelivery = new Date()
-  estimatedDelivery.setDate(estimatedDelivery.getDate() + 5)
+  const addToCart = useStore((state: any) => state.addToCart);
+  const cart = useStore((state: any) => state.cart);
+  const isInCart = cart.some((item: any) => item.id === data.id);
+  const addToWishlist = useStore((state: any) => state.addToWishList);
+  const removeFromWishlist = useStore((state: any) => state.removeFromWishlist);
+  const wishlist = useStore((state: any) => state.wishlist);
+  const isWishlisted = wishlist.some((item: any) => item.id === data.id);
+  const { user } = useUser();
+  const location = useLocationTracking();
+  const deviceInfo = useDeviceTracking();
 
-    const router = useRouter();
+  const estimatedDelivery = new Date();
+  estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
+
+  const router = useRouter();
 
   return (
     <div
@@ -110,20 +125,16 @@ const ProductDetailsCard = ({
                 <X size={25} onClick={() => setOpen(false)} />
               </button>
             </div>
-
             <h3 className="text-xl font-semibold mt-3">{data?.title}</h3>
-
             <p className="mt-2 text-gray-700 white-space-pre-wrap w-full">
               {data?.short_description}{" "}
             </p>
-
             {/** Brand */}
             {data?.brand && (
               <p className="mt-2">
                 <strong>Brand:</strong> {data.brand}
               </p>
             )}
-
             <div className="flex flex-col md:flex-row items-start gap-5 mt-4">
               {/** Size Options */}
               {data?.sizes?.length > 0 && (
@@ -147,7 +158,6 @@ const ProductDetailsCard = ({
                 </div>
               )}
             </div>
-
             {/** Price Section */}
             <div className="mt-5 flex items-center gap-4">
               <h3 className="text-2xl font-semibold text-gray-900">
@@ -159,52 +169,86 @@ const ProductDetailsCard = ({
                 </h3>
               )}
             </div>
-
-              <div className="mt-5 flex items-center gap-5">
-                <div className="flex items-center rounded-md">
-                  <button
-                    className="px-3 cursor-pointer py-1 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md"
-                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                  >
-                    -
-                  </button>
-                  <span className="px-4 bg-gray-100 py-1">{quantity}</span>
-                  <button
-                    className="px-3 cursor-pointer py-1 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md"
-                    onClick={() => setQuantity((prev) => prev + 1)}
-                  >
-                    +
-                  </button>
-                </div>
+            <div className="mt-5 flex items-center gap-5">
+              <div className="flex items-center rounded-md">
                 <button
-                  className={`flex items-center gap-2 px-4 py-2 bg-[#ff5722] hover:bg-[#e64a19] text-white font-medium rounded-lg transition`}
+                  className="px-3 cursor-pointer py-1 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md"
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                 >
-                  <ShoppingCart size={18} />
+                  -
                 </button>
-                <button className="opacity-[0.7] cursor-pointer">
-                  <Heart size={30} fill="red" color="transparent" />
+                <span className="px-4 bg-gray-100 py-1">{quantity}</span>
+                <button
+                  className="px-3 cursor-pointer py-1 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md"
+                  onClick={() => setQuantity((prev) => prev + 1)}
+                >
+                  +
                 </button>
               </div>
-
-              <div className="mt-3">
-                {data.stock > 0 ? (
-                  <span className="text-green-600 font-semibold">
-                    In Stock
-                  </span>
-                ) : (
-                  <span className="text-red-600 font-semibold">Out of Stock</span>
-                )}
-              </div>{" "}
-              <div className="mt-3 text-gray-600 text-sm">
-                Estimated Delivery:{" "}
-                <strong>{estimatedDelivery.toDateString()}</strong>
-              </div>
-
+              <button
+                disabled={isInCart}
+                onClick={() =>
+                  addToCart(
+                    {
+                      ...data,
+                      quantity,
+                      selectedOptions: {
+                        color: isSizeSelected,
+                        size: isSizeSelected,
+                      },
+                    },
+                    user,
+                    location,
+                    deviceInfo
+                  )
+                }
+                className={`flex items-center gap-2 px-4 py-2 bg-[#ff5722] hover:bg-[#e64a19] text-white font-medium rounded-lg transition ${
+                  isInCart ? "cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                <ShoppingCart size={18} />
+                Add to Cart
+              </button>
+              <button className="opacity-[0.7] cursor-pointer">
+                <Heart
+                  size={30}
+                  fill={isWishlisted ? "red" : "transparent"}
+                  color={isWishlisted ? "transparent" : "black"}
+                  onClick={() =>
+                    isWishlisted
+                      ? removeFromWishlist(data.id, user, location, deviceInfo)
+                      : addToWishlist(
+                          {
+                            ...data,
+                            quantity,
+                            selectedOptions: {
+                              color: isSizeSelected,
+                              size: isSizeSelected,
+                            },
+                          },
+                          user,
+                          location,
+                          deviceInfo
+                        )
+                  }
+                />
+              </button>
             </div>
-
+            <div className="mt-3">
+              {data.stock > 0 ? (
+                <span className="text-green-600 font-semibold">In Stock</span>
+              ) : (
+                <span className="text-red-600 font-semibold">Out of Stock</span>
+              )}
+            </div>{" "}
+            <div className="mt-3 text-gray-600 text-sm">
+              Estimated Delivery:{" "}
+              <strong>{estimatedDelivery.toDateString()}</strong>
+            </div>
           </div>
         </div>
       </div>
+    </div>
   );
 };
 

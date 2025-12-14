@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 
 import HeaderBottom from "./header-bottom";
 
@@ -9,9 +9,30 @@ import { CircleUser } from "lucide-react";
 import { Heart } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
 import useUser from "apps/user-ui/src/hooks/useUser";
+import { useStore } from "apps/user-ui/src/store";
+import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 
 const Header = () => {
   const { user, isLoading } = useUser();
+  const wishlist = useStore((state:any) => state.wishlist)
+  const cart = useStore((state:any) => state.cart)
+
+  const [searchQuery, setSearchQuery] = useState("")
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+
+  // const handleSearchClick = async () => {
+  //   if(!searchQuery.trim()) return;
+  //   setLoadingSuggestions(true)
+  //   try {
+  //     const res = await axiosInstance.get(`/product`)
+  //     setSuggestions(res.data.products.slice(0, 10))
+  //   } catch (error) {
+  //   } finally {
+  //     setLoadingSuggestions(false)
+
+  //   }
+  // }
 
   return (
     <div className="w-full bg-white">
@@ -60,17 +81,19 @@ const Header = () => {
               </>
             )}
           </div>
+
+          {/** Wishlist & Cart */}
           <div className="flex items-center gap-5">
             <Link href={"/wishlist"} className="relative">
               <Heart />
               <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                <span className="text-white font-medium text-sm">0</span>
+                <span className="text-white font-medium text-sm">{wishlist?.length}</span>
               </div>
             </Link>
             <Link href={"/cart"} className="relative">
               <ShoppingCart />
               <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                <span className="text-white font-medium text-sm">9+</span>
+                <span className="text-white font-medium text-sm">{cart?.length}</span>
               </div>
             </Link>
           </div>
