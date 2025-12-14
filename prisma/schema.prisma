@@ -121,7 +121,7 @@ model products {
   ratings                 Float   @default(5)
   quality_guarantee       String?
   custom_specifications   Json?
-  custom_properties       Json
+  custom_properties       Json?
   isDeleted               Boolean? @default(false)
   cashOnDelivery          String?
   discount_codes          String[] @db.ObjectId

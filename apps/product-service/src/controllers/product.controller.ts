@@ -217,17 +217,17 @@ export const createProduct = async (
     const newProduct = await prisma.products.create({
       data: {
         title,
+        slug,
+        category,
+        subCategory,
         short_description,
         detailed_description,
         quality_guarantee,
         cashOnDelivery: cash_on_delivery,
-        slug,
         shopId: req.seller?.shop?.id!,
         tags: Array.isArray(tags) ? tags : tags.split(","),
         brand,
         video_url,
-        category,
-        subCategory,
         discount_codes: discountCodes.map((codeId: string) => codeId),
         sizes: sizes || [],
         stock: parseInt(stock),
@@ -396,7 +396,8 @@ export const getAllProducts = async (
     const orderBy: Prisma.productsOrderByWithRelationInput =
       type === "latest"
         ? { createdAt: "desc" as Prisma.SortOrder }
-        : { totalSales: "desc" as Prisma.SortOrder };
+        : // : { totalSales: "desc" as Prisma.SortOrder };
+          { ratings: "desc" as Prisma.SortOrder }; //thay thể totalSales
 
     const [products, total, top10Products] = await Promise.all([
       prisma.products.findMany({
@@ -407,9 +408,10 @@ export const getAllProducts = async (
           Shop: true,
         },
         where: baseFilter,
-        orderBy: {
-          totalSales: "desc",
-        },
+        // orderBy: {
+        //   totalSales: "desc",
+        // },
+        orderBy,
       }),
 
       prisma.products.count({ where: baseFilter }),
@@ -429,8 +431,6 @@ export const getAllProducts = async (
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
-
-
