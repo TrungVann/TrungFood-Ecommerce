@@ -1,5 +1,7 @@
+import useUser from "apps/user-ui/src/hooks/useUser";
 import ProductDetailsCard from "apps/user-ui/src/shared/components/cards/product-details.card";
 import Ratings from "apps/user-ui/src/shared/components/ratings";
+import { useStore } from "apps/user-ui/src/store";
 import { Eye, Heart, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -12,7 +14,15 @@ const ProductCard = ({
   isEvent?: boolean;
 }) => {
   const [timeLeft, setTimeLeft] = useState("");
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
+  const {user} = useUser();
+  const addToCart = useStore((state: any) => state.addToCart);
+  const addToWishList = useStore((state: any) => state.addToWishList);
+  const removeFromWishList = useStore((state: any) => state.removeFromWishList);
+  const wishlist = useStore((state: any) => state.wishlist);
+  const isWishlished = wishlist.some((item: any) => item.id === product.id);
+  const cart = useStore((state: any) => state.cart);
+  const isInCart = cart.some((item: any) => item.id === product.id);
 
   useEffect(() => {
     if (isEvent && product?.ending_date) {
@@ -107,8 +117,17 @@ const ProductCard = ({
           <Heart
             className="cursor-pointer hover:scale-110 transition"
             size={22}
-            fill={"red"}
-            stroke="red"
+            fill={isWishlished ? "red" : "transparent"}
+            onClick={
+              (() =>
+                isWishlished
+                  ? removeFromWishList(product.id, user, location, deviceInfo)
+                  : addToWishList({ ...product, quantity: 1 },
+              user,
+              location,
+              deviceInfo)
+            }
+            stroke={isWishlished ? "red" : "#4B5563"}
           />
         </div>
         <div className="bg-white rounded-full p-[6px] shadow-md">
@@ -126,9 +145,7 @@ const ProductCard = ({
         </div>
       </div>
 
-      {open && (
-        <ProductDetailsCard data={product} setOpen={setOpen}/>
-      )}
+      {open && <ProductDetailsCard data={product} setOpen={setOpen} />}
     </div>
   );
 };
