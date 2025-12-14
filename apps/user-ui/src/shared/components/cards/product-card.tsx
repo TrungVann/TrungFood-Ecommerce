@@ -1,3 +1,5 @@
+import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
+import useLocationTracking from "apps/user-ui/src/hooks/useLocationTracking";
 import useUser from "apps/user-ui/src/hooks/useUser";
 import ProductDetailsCard from "apps/user-ui/src/shared/components/cards/product-details.card";
 import Ratings from "apps/user-ui/src/shared/components/ratings";
@@ -16,6 +18,8 @@ const ProductCard = ({
   const [timeLeft, setTimeLeft] = useState("");
   const [open, setOpen] = useState(false);
   const {user} = useUser();
+  const location = useLocationTracking()
+  const deviceInfo = useDeviceTracking()
   const addToCart = useStore((state: any) => state.addToCart);
   const addToWishList = useStore((state: any) => state.addToWishList);
   const removeFromWishList = useStore((state: any) => state.removeFromWishList);
